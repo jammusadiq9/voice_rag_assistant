@@ -5,6 +5,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st
+import streamlit.components.v1 as components
 from config.settings import settings
 from src.core.document_loader import DocumentProcessor
 from src.database.vector_store import VectorStoreManager
@@ -68,11 +69,49 @@ with tab_text:
 
 with tab_voice:
     st.subheader("🗣️ Real-Time Voice Agent")
-    st.write("Streamlit ke iframe restrictions se bachne ke liye direct voice portal use karein:")
+    st.write("Neeche diye gaye voice button par click karein aur mic allow karke directly baat karein:")
     
-    st.link_button(
-        "🚀 Open Voice Assistant (New Tab)",
-        url="http://localhost:8000/voice",
-        type="primary"
-    )
-    st.caption("Browser pop-up me microphone allow karein aur bol kar documents se sawal puchein.")
+    vapi_html = f"""
+    <div id="vapi-widget-container" style="display: flex; justify-content: center; align-items: center; padding: 20px;"></div>
+    <script src="https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js"></script>
+    <script>
+      var vapiInstance = null;
+      const apiKey = "{settings.VAPI_PUBLIC_KEY}";
+      const assistantId = "{settings.VAPI_ASSISTANT_ID}";
+      
+      const buttonConfig = {{
+        position: "center",
+        offset: "0px",
+        width: "60px",
+        height: "60px",
+        idle: {{
+          color: "rgb(255, 75, 75)",
+          type: "pill",
+          title: "Start Voice Conversation",
+          subtitle: "Talk to RAG Voice Assistant",
+          icon: "https://unpkg.com/lucide-static@0.321.0/icons/phone.svg",
+        }},
+        loading: {{
+          color: "rgb(93, 124, 202)",
+          type: "pill",
+          title: "Connecting...",
+          subtitle: "Please wait",
+          icon: "https://unpkg.com/lucide-static@0.321.0/icons/loader-2.svg",
+        }},
+        active: {{
+          color: "rgb(255, 0, 0)",
+          type: "pill",
+          title: "Call in progress...",
+          subtitle: "Listening to you",
+          icon: "https://unpkg.com/lucide-static@0.321.0/icons/phone-off.svg",
+        }},
+      }};
+
+      vapiSDK.run({{
+        apiKey: apiKey,
+        assistant: assistantId,
+        config: buttonConfig,
+      }});
+    </script>
+    """
+    components.html(vapi_html, height=220)
